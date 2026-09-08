@@ -3,6 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Улитка</title>
+    <script type="importmap">
+    {
+        "imports": {
+            "@google/model-viewer": "https://unpkg.com/@google/model-viewer@latest/dist/model-viewer.min.js"
+        }
+    }
+    </script>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; }
+        model-viewer { width: 100vw; height: 100vh; }
+    </style>
+</head>
+<body>
+    <model-viewer 
+        src="https://modelviewer.dev/assets/ShopifyModels/ToyTrain.glb"
+        ar 
+        ar-modes="webxr scene-viewer"
+        camera-controls
+        style="width:100vw;height:100vh"
+    ></model-viewer>
+</body>
+</html><!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR</title>
     <script type="importmap">
     {
