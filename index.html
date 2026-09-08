@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Улитка</title>
+    <title>AR Apple</title>
     <script type="importmap">
     {
         "imports": {
@@ -12,20 +12,19 @@
     }
     </script>
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; background: #888; }
+        body { margin: 0; padding: 0; overflow: hidden; background: #fff; }
         model-viewer { width: 100vw; height: 100vh; }
     </style>
 </head>
 <body>
     <model-viewer 
-        src="https://modelviewer.dev/assets/ShopifyModels/ToyTrain.glb"
+        src="https://modelviewer.dev/assets/ShopifyModels/Apple.glb"
         ar 
         ar-modes="webxr scene-viewer"
         camera-controls
-        exposure="1.5"
-        shadow-intensity="1"
-        environment-image="https://modelviewer.dev/shared-assets/environments/spruit_sunrise_1k.hdr"
-        style="width:100vw;height:100vh;background:#ffffff;"
+        auto-rotate
+        environment-image="neutral"
+        style="width:100vw;height:100vh;background:#f0f0f0;"
     ></model-viewer>
 </body>
 </html>
