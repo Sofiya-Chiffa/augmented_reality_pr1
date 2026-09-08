@@ -3,46 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WebAR практика 1</title>
-    
-    <!-- 
-        ПОДКЛЮЧАЕМ model-viewer 
-        Именно так, как вы показали в примере
-    -->
+    <title>практика 1</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.3.1/model-viewer.min.js"></script>
-
-    <style>
-        /* Убираем все отступы */
-        * {
-            margin: 0;
-            padding: 0;
-        }
-        
-        /* Растягиваем на весь экран */
-        model-viewer {
-            width: 100vw;
-            height: 100vh;
-            display: block;
-        }
-        
-        /* Делаем кнопку AR заметной */
-        model-viewer::part(default-enter-ar-button) {
-            background-color: #ff6b00;
-            border: 2px solid white;
-            border-radius: 50px;
-            color: white;
-            font-size: 20px;
-            padding: 15px 35px;
-            font-weight: bold;
-        }
-    </style>
 </head>
 <body>
 
-    <!-- 
-        ОДИН ТЕГ - И ВСЁ РАБОТАЕТ!
-        Это минимальная настройка для Android
-    -->
     <model-viewer
         src="model.glb"
         ar
