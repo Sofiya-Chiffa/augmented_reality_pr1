@@ -3,22 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Apple</title>
-    <script type="importmap">
-    {
-        "imports": {
-            "@google/model-viewer": "https://unpkg.com/@google/model-viewer@latest/dist/model-viewer.min.js"
-        }
-    }
-    </script>
-    <style>
-        body { margin: 0; padding: 0; overflow: hidden; background: #fff; }
-        model-viewer { width: 100vw; height: 100vh; }
-    </style>
+    <title>AR</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.3.1/model-viewer.min.js"></script>
 </head>
 <body>
     <model-viewer 
-        src="https://modelviewer.dev/assets/ShopifyModels/Apple.glb"
+        src="https://modelviewer.dev/ass<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <!-- 1. Базовые мета-теги для мобильных устройств -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Задание 1 - WebAR</title>
+
+    <!-- 2. Подключение библиотеки model-viewer -->
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/model-viewer": "https://unpkg.com/@google/model-viewer@latest/dist/model-viewer.min.js"
+            }
+        }
+    </script>
+
+    <!-- 3. Минимальные стили -->
+    <style>
+        /* Убираем отступы, чтобы модель занимала весь экран */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Главный контейнер с моделью */
+        model-viewer {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        /* 
+            Стиль для кнопки AR (из документации Google).
+            Это та же кнопка, что используется в официальных примерах.
+        */
+        #ar-button {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48"><path fill="%234285f4" d="M24 2L4 14v20l20 12 20-12V14L24 2zm0 4.7l14.5 8.7-4.7 2.8L24 13.5 9.2 22.2 4.5 19.4 24 6.7zM8 22.4l4.7 2.8v5.6L8 28.1v-5.7zm6.7 4l4.7 2.8v5.6l-4.7-2.8v-5.6zm6.7 4l4.7 2.8v5.6l-4.7-2.8v-5.6zm6.7-4l4.7-2.8v5.6l-4.7 2.8v-5.6zm6.7-4l4.7-2.8v5.6l-4.7 2.8v-5.6z"/></svg>');
+            background-repeat: no-repeat;
+            background-size: 20px 20px;
+            background-position: 12px 50%;
+            background-color: #fff;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 60px;
+            padding: 0 20px 0 40px;
+            font-size: 16px;
+            color: #4285f4;
+            height: 48px;
+            line-height: 48px;
+            border-radius: 24px;
+            border: 1px solid #DADCE0;
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        #ar-button:active {
+            background-color: #E8EAED;
+        }
+
+        /* Подсказка "Поиск поверхности" (появляется в AR-режиме) */
+        #ar-prompt {
+            position: absolute;
+            left: 50%;
+            bottom: 130px;
+            transform: translateX(-50%);
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: none;
+            pointer-events: none;
+        }
+
+        /* Показываем подсказку, когда AR-сессия активна */
+        model-viewer[ar-status="session-started"] + #ar-prompt,
+        model-viewer[ar-status="session-started"] ~ #ar-prompt {
+            display: block;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Анимация пульсации для подсказки */
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+        }
+
+        /* Сообщение об ошибке (если AR не работает) */
+        #ar-error {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            background: rgba(255,0,0,0.8);
+            padding: 20px 30px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            max-width: 80%;
+        }
+
+        model-viewer[ar-status="failed"] ~ #ar-error {
+            display: block;
+        }
+
+        /* Стиль для информации внизу */
+        .footer {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: rgba(255,255,255,0.3);
+            font-size: 11px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 
+        ===== ОСНОВНОЙ КОМПОНЕНТ =====
+        Здесь все настройки для AR на Android
+    -->
+    <model-viewer
+        id="mv"
+        src="model.glb"
+        alt="3D модель в AR"
+        ar
+        ar-modes="webxr scene-viewer"
+        ar-scale="auto"
+        camera-controls
+        shadow-intensity="1"
+        exposure="1.2"
+        environment-image="neutral"
+        auto-rotate
+        rotation-per-second="20deg"
+        min-camera-orbit="auto auto 0.3m"
+        max-camera-orbit="auto auto 3m"
+    >
+        <!-- 
+            Кнопка AR (заменяет стандартную).
+            Используем slot="ar-button" - это специальное место в компоненте
+        -->
+        <button slot="ar-button" id="ar-button">
+            Посмотреть в AR
+        </button>
+
+    </model-viewer>
+
+    <!-- 
+        Подсказка, которая появляется в AR-режиме
+        (находится вне model-viewer, но связана с ним через CSS-селекторы)
+    -->
+    <div id="ar-prompt">
+        👆 Наведите камеру на пол или стол
+    </div>
+
+    <!-- Сообщение об ошибке, если AR не запустился -->
+    <div id="ar-error">
+        ❌ AR не поддерживается на этом устройстве<br>
+        <small>Используйте Chrome на Android с поддержкой ARCore</small>
+    </div>
+
+    <!-- Подпись внизу -->
+    <div class="footer">
+        Студент: [Ваше имя] | WebAR Практика №1
+    </div>
+
+    <!-- 
+        ===== НЕБОЛЬШОЙ СКРИПТ ДЛЯ ОБРАБОТКИ СОБЫТИЙ =====
+    -->
+    <script type="module">
+        // Находим наш компонент на странице
+        const modelViewer = document.querySelector('#mv');
+
+        // Слушаем изменение статуса AR
+        modelViewer.addEventListener('ar-status', (event) => {
+            console.log('AR Status:', event.detail.status);
+            
+            if (event.detail.status === 'session-started') {
+                console.log('✅ AR-сессия запущена!');
+            }
+            
+            if (event.detail.status === 'failed') {
+                console.log('❌ Ошибка AR:', event.detail.message);
+            }
+        });
+
+        // Слушаем трекинг (отслеживание поверхности)
+        modelViewer.addEventListener('ar-tracking', (event) => {
+            if (event.detail.state === 'tracking') {
+                console.log('✅ Поверхность найдена!');
+            } else {
+                console.log('⏳ Поиск поверхности...');
+            }
+        });
+
+        // Если модель загрузилась
+        modelViewer.addEventListener('load', () => {
+            console.log('✅ Модель загружена');
+        });
+
+        // Если произошла ошибка
+        modelViewer.addEventListener('error', (event) => {
+            console.error('Ошибка:', event.detail);
+        });
+    </script>
+
+</body>
+</html>ets/ShopifyModels/Apple.glb"
         ar 
         ar-modes="webxr scene-viewer"
         camera-controls
