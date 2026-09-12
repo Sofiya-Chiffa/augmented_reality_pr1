@@ -1,64 +1,121 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>практика 1 — задание 2</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Задание 2</title>
 
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+    #startBtn {
+      position: fixed; inset: 0; margin: auto;
+      width: 260px; height: 64px;
+      border: none; border-radius: 32px;
+      background: #fff; color: #111;
+      font: 600 18px/1 system-ui, sans-serif;
+      cursor: pointer; z-index: 10;
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+    }
+    #hint {
+      position: fixed; left: 0; right: 0; bottom: 16px;
+      text-align: center; color: #fff;
+      font: 14px/1.4 system-ui, sans-serif;
+      text-shadow: 0 1px 4px #000;
+      pointer-events: none; opacity: .9;
+      transition: opacity .4s;
+    }
+    .a-enter-vr, .a-enter-ar { display: none !important; } /* убираем лишние кнопки */
+  </style>
 
-    <style>
-        html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
-        #startBtn {
-            position: fixed; inset: 0; margin: auto;
-            width: 240px; height: 60px;
-            border: none; border-radius: 30px;
-            background: #fff; color: #111;
-            font: 600 18px system-ui, sans-serif;
-            cursor: pointer; z-index: 10;
-        }
-    </style>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body>
 
-    <button id="startBtn">Начать AR</button>
+  <button id="startBtn">Начать AR</button>
+  <div id="hint">Наведите камеру на маркер</div>
 
-    <a-scene
-        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; maxTrack: 1;"
-        color-space="sRGB"
-        renderer="colorManagement: true, physicallyCorrectLights"
-        vr-mode-ui="enabled: false"
-        device-orientation-permission-ui="enabled: false"
-        embedded
-        style="position: fixed; inset: 0;">
+  <a-scene
+      mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; maxTrack: 1; uiLoading: no; uiScanning: no; uiError: no;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+      embedded
+      style="position: fixed; inset: 0;">
 
-        <a-entity light="type: ambient; color: #ffffff; intensity: 0.9"></a-entity>
-        <a-entity light="type: directional; color: #ffe9c4; intensity: 1.1"
-                  position="2 3 2"></a-entity>
-        <a-entity light="type: directional; color: #9fd3ff; intensity: 0.4"
-                  position="-2 1 -2"></a-entity>
+    <a-entity light="type: ambient; color: #ffffff; intensity: 0.9"></a-entity>
 
-        <!-- targetIndex: 0 — первый маркер из targets.mind -->
-        <a-entity mindar-image-target="targetIndex: 0">
+    <a-entity light="type: directional; color: #ffe9c4; intensity: 1.1"
+              position="2 3 2"></a-entity>
 
-            <a-gltf-model
-                src="./free_stylized_low_poly_snail.glb"
-                position="0 0 0"
-                scale="0.4 0.4 0.4"
-                rotation="0 0 0"></a-gltf-model>
+    <a-entity light="type: directional; color: #9fd3ff; intensity: 0.4"
+              position="-2 1 -2"></a-entity>
 
-        </a-entity>
+    <a-entity id="markerTarget" mindar-image-target="targetIndex: 0">
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-    </a-scene>
+      <a-circle
+        radius="0.35"
+        rotation="-90 0 0"
+        position="0 0 0"
+        material="color: #1e2a38; opacity: 0.55; transparent: true; shader: flat">
+      </a-circle>
 
-    <script>
-        const scene = document.querySelector('a-scene');
-        document.getElementById('startBtn').addEventListener('click', () => {
-            document.getElementById('startBtn').style.display = 'none';
-            scene.systems['mindar-image-system'].start();
-        });
-    </script>
+      <a-gltf-model
+        id="robot"
+        src="./models/robot.glb"
+        position="0 0.15 0"
+        scale="0.4 0.4 0.4"
+        rotation="0 0 0"
+        animation-mixer="clip: *; loop: repeat"></a-gltf-model>
+
+      <a-entity
+        id="label"
+        position="0 0.75 0"
+        text="value: Робот в AR; align: center; color: #fff; width: 2"
+        visible="false"></a-entity>
+    </a-entity>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+  </a-scene>
+
+  <script>
+    const scene   = document.querySelector('a-scene');
+    const startBtn = document.getElementById('startBtn');
+    const hint    = document.getElementById('hint');
+
+    startBtn.addEventListener('click', () => {
+      startBtn.style.display = 'none';
+      scene.systems['mindar-image-system'].start();
+    });
+
+    // ---------- Реакция на появление/потерю маркера ----------
+    const target = document.getElementById('markerTarget');
+    const label  = document.getElementById('label');
+    const robot  = document.getElementById('robot');
+
+    target.addEventListener('targetFound', () => {
+      hint.style.opacity = '0';
+      label.setAttribute('visible', true);
+
+      robot.setAttribute('animation__pop', {
+        property: 'scale',
+        from: '0.001 0.001 0.001',
+        to:   '0.4 0.4 0.4',
+        dur:  400,
+        easing: 'easeOutBack'
+      });
+    });
+
+    target.addEventListener('targetLost', () => {
+      hint.style.opacity = '.9';
+      label.setAttribute('visible', false);
+    });
+
+    scene.addEventListener('loaded', () => {
+      console.log('[MindAR] scene loaded');
+    });
+  </script>
 </body>
 </html>
