@@ -3,24 +3,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <style>
-      html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
-      #hint {
-        position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
-        color: #fff; background: rgba(0,0,0,.55); padding: 10px 16px;
-        border-radius: 999px; font: 14px system-ui, sans-serif;
-        pointer-events: none; z-index: 10; transition: opacity .3s;
-      }
-    </style>
   </head>
   <body>
-
-    <div id="hint">Наведите камеру на маркер 📷</div>
-
-    <!--
-      mindar-image: путь к скомпилированному targets.mind
-      color-space / renderer / vr-mode-ui / device-orientation — как в рабочем примере
-    -->
     <a-scene
       mindar-image="imageTargetSrc: ./targets.mind;"
       color-space="sRGB"
@@ -29,48 +13,20 @@
       device-orientation-permission-ui="enabled: false">
 
       <a-assets>
-        <!-- Превью-плоскость с самим маркером (как card.png в примере) -->
-        <img id="marker" src="./marker.png" />
-
-        <!-- 3D-модель улитки из Задания 1 -->
-        <a-asset-item id="snailModel" src="./free_stylized_low_poly_snail.glb"></a-asset-item>
+        <a-asset-item id="snailModel" src="free_stylized_low_poly_snail.glb"></a-asset-item>
       </a-assets>
 
-      <!-- Камера: без управления, сцена привязана к маркеру -->
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Освещение сцены (требование: базовые параметры света) -->
-      <a-entity light="type: ambient; color: #ffffff; intensity: 0.9"></a-entity>
-      <a-entity light="type: directional; color: #ffffff; intensity: 1.2"
-                position="0.5 1 1"></a-entity>
-      <a-entity light="type: hemisphere; skyColor: #ffffff; groundColor: #444444; intensity: 0.6"></a-entity>
-
-      <!-- Цель = маркер №0. Всё внутри привязано к его плоскости -->
       <a-entity mindar-image-target="targetIndex: 0">
-
-        <!-- Плоскость маркера: пропорции 1 : 0.552 как в примере MindAR (card) -->
-        <a-plane src="#marker" position="0 0 0" height="0.552" width="1" rotation="0 0 0"></a-plane>
-
-        <!-- Модель улитки: центр маркера, чуть вперёд по Z, отмасштабирована -->
         <a-gltf-model
           src="#snailModel"
-          position="0 0 0.1"
           rotation="0 0 0"
-          scale="0.005 0.005 0.005"
+          position="0 0 0.1"
+          scale="0.3 0.3 0.3"
           animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
         </a-gltf-model>
-
       </a-entity>
     </a-scene>
-
-    <script>
-      // Прячем подсказку, когда маркер найден
-      const hint   = document.getElementById('hint');
-      const target = document.querySelector('[mindar-image-target]');
-
-      target.addEventListener('targetFound', () => { hint.style.opacity = 0; });
-      target.addEventListener('targetLost',  () => { hint.style.opacity = 1; });
-    </script>
-
   </body>
 </html>
