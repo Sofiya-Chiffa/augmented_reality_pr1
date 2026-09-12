@@ -2,120 +2,108 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Задание 2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Практика 2 — MindAR Image Tracking</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <!-- MindAR: сначала "основной" скрипт, потом A-Frame-обёртка -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
-    #startBtn {
-      position: fixed; inset: 0; margin: auto;
-      width: 260px; height: 64px;
-      border: none; border-radius: 32px;
-      background: #fff; color: #111;
-      font: 600 18px/1 system-ui, sans-serif;
-      cursor: pointer; z-index: 10;
-      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
     }
+    /* Подсказка поверх сцены */
     #hint {
-      position: fixed; left: 0; right: 0; bottom: 16px;
-      text-align: center; color: #fff;
-      font: 14px/1.4 system-ui, sans-serif;
-      text-shadow: 0 1px 4px #000;
-      pointer-events: none; opacity: .9;
-      transition: opacity .4s;
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      color: #fff;
+      background: rgba(0,0,0,.55);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font: 14px/1.3 system-ui, sans-serif;
+      pointer-events: none;
+      z-index: 10;
+      transition: opacity .3s;
     }
-    .a-enter-vr, .a-enter-ar { display: none !important; } /* убираем лишние кнопки */
+    .a-enter-vr, .a-enter-ar { display: none !important; }
   </style>
-
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body>
 
-  <button id="startBtn">Начать AR</button>
-  <div id="hint">Наведите камеру на маркер</div>
+  <div id="hint">Наведите камеру на маркер 📷</div>
 
+  <!--
+    mindar-image="imageTargetSrc: …"  — путь к скомпилированному targets.mind
+    maxTrack, uiLoading, uiScanning — служебные флаги MindAR
+  -->
   <a-scene
-      mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; maxTrack: 1; uiLoading: no; uiScanning: no; uiError: no;"
-      color-space="sRGB"
-      renderer="colorManagement: true, physicallyCorrectLights"
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
-      embedded
-      style="position: fixed; inset: 0;">
+    mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;"
+    color-space="sRGB"
+    renderer="colorManagement: true; physicallyCorrectLights: true; alpha: true; antialias: true;"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    embedded
+    style="width:100%;height:100%;position:fixed;top:0;left:0;">
 
+    <!-- Камера и свет -->
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- Базовое освещение сцены -->
     <a-entity light="type: ambient; color: #ffffff; intensity: 0.9"></a-entity>
+    <a-entity light="type: directional; color: #ffffff; intensity: 1.2"
+              position="0.5 1 1"></a-entity>
+    <a-entity light="type: hemisphere; skyColor: #ffffff; groundColor: #444444; intensity: 0.6"></a-entity>
 
-    <a-entity light="type: directional; color: #ffe9c4; intensity: 1.1"
-              position="2 3 2"></a-entity>
+    <!--
+      Целевое изображение (маркер).
+      index="0" — порядковый номер цели в targets.mind (первое загруженное изображение).
+      Модель появляется в системе координат этого маркера.
+    -->
+    <a-entity mindar-image-target="targetIndex: 0" id="target-0">
 
-    <a-entity light="type: directional; color: #9fd3ff; intensity: 0.4"
-              position="-2 1 -2"></a-entity>
-
-    <a-entity id="markerTarget" mindar-image-target="targetIndex: 0">
-
-      <a-circle
-        radius="0.35"
-        rotation="-90 0 0"
+      <!-- Модель улитки: центр маркера = (0,0,0), поднимаем над плоскостью и масштабируем -->
+      <a-gltf-model
+        src="./free_stylized_low_poly_snail.glb"
         position="0 0 0"
-        material="color: #1e2a38; opacity: 0.55; transparent: true; shader: flat">
+        rotation="0 0 0"
+        scale="0.4 0.4 0.4"
+        animation-mixer>
+      </a-gltf-model>
+
+      <!-- Тень-«подложка» под моделью для ощущения объёма -->
+      <a-circle
+        radius="0.6"
+        rotation="-90 0 0"
+        position="0 0.01 0"
+        material="color: #000; opacity: 0.35; transparent: true; shader: flat">
       </a-circle>
 
-      <a-gltf-model
-        id="robot"
-        src="./models/robot.glb"
-        position="0 0.15 0"
-        scale="0.4 0.4 0.4"
-        rotation="0 0 0"
-        animation-mixer="clip: *; loop: repeat"></a-gltf-model>
-
-      <a-entity
-        id="label"
-        position="0 0.75 0"
-        text="value: Робот в AR; align: center; color: #fff; width: 2"
-        visible="false"></a-entity>
     </a-entity>
-
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
   </a-scene>
 
   <script>
-    const scene   = document.querySelector('a-scene');
-    const startBtn = document.getElementById('startBtn');
-    const hint    = document.getElementById('hint');
+    // Скрываем подсказку, когда маркер найден
+    const scene  = document.querySelector('a-scene');
+    const hint   = document.getElementById('hint');
+    const target = document.getElementById('target-0');
 
-    startBtn.addEventListener('click', () => {
-      startBtn.style.display = 'none';
-      scene.systems['mindar-image-system'].start();
-    });
+    target.addEventListener('targetFound',  () => { hint.style.opacity = 0; });
+    target.addEventListener('targetLost',   () => { hint.style.opacity = 1; });
 
-    // ---------- Реакция на появление/потерю маркера ----------
-    const target = document.getElementById('markerTarget');
-    const label  = document.getElementById('label');
-    const robot  = document.getElementById('robot');
-
-    target.addEventListener('targetFound', () => {
-      hint.style.opacity = '0';
-      label.setAttribute('visible', true);
-
-      robot.setAttribute('animation__pop', {
-        property: 'scale',
-        from: '0.001 0.001 0.001',
-        to:   '0.4 0.4 0.4',
-        dur:  400,
-        easing: 'easeOutBack'
-      });
-    });
-
-    target.addEventListener('targetLost', () => {
-      hint.style.opacity = '.9';
-      label.setAttribute('visible', false);
-    });
-
-    scene.addEventListener('loaded', () => {
-      console.log('[MindAR] scene loaded');
+    // На случай ошибки инициализации камеры
+    scene.addEventListener('arError', (e) => {
+      hint.textContent = 'Ошибка AR: ' + (e.detail?.error?.message || 'см. консоль');
+      console.error(e.detail);
     });
   </script>
+
 </body>
 </html>
