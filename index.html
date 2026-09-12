@@ -1,26 +1,62 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>практика 1</title>
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Практика 2 — MindAR Image Tracking</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <!-- aframe-extras (animation-mixer и др.) -->
+  <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
+
+  <!-- MindAR + A-Frame обёртка -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+    #hint {
+      position: fixed; left: 50%; bottom: 24px;
+      transform: translateX(-50%);
+      padding: 10px 16px;
+      color: #fff;
+      background: rgba(0,0,0,.55);
+      border-radius: 999px;
+      font: 14px/1.3 system-ui, sans-serif;
+      z-index: 10;
+      pointer-events: none;
+      transition: opacity .3s ease;
+    }
+  </style>
 </head>
 <body>
 
-<a-scene mindar-image="imageTargetSrc: targets.mind; maxTrack: 2" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      <a-assets>
-        <a-asset-item id="snailModel" src="free_stylized_low_poly_snail.glb"></a-asset-item>
-      </a-assets>
+  <div id="hint">Наведите камеру на маркер 📷</div>
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 1; autoStart: true; uiLoading: no; uiScanning: no; uiError: no;"
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    embedded
+    style="width:100%;height:100%;position:fixed;top:0;left:0;">
 
-          <a-entity light="type: ambient; color: #ffffff; intensity: 0.9"></a-entity>
+    <!-- Предзагрузка модели из glTF/GLB -->
+    <a-assets>
+      <a-asset-item id="snailModel" src="./free_stylized_low_poly_snail.glb"></a-asset-item>
+    </a-assets>
+
+    <!-- Камера без look-controls — сцена привязана к реальному миру -->
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- Базовое освещение сцены -->
+    <a-entity light="type: ambient; color: #ffffff; intensity: 0.9"></a-entity>
     <a-entity light="type: directional; color: #ffffff; intensity: 1.1" position="0.5 1 1"></a-entity>
     <a-entity light="type: hemisphere; skyColor: #ffffff; groundColor: #444444; intensity: 0.6"></a-entity>
 
+    <!-- Модель появляется на маркере с targetIndex: 0 -->
     <a-entity mindar-image-target="targetIndex: 0" id="target-0">
       <a-gltf-model
         rotation="0 0 0"
@@ -30,7 +66,23 @@
         animation-mixer>
       </a-gltf-model>
     </a-entity>
-    </a-scene>
+
+  </a-scene>
+
+  <script>
+    // Прячем подсказку, когда маркер найден
+    const hint   = document.getElementById('hint');
+    const target = document.getElementById('target-0');
+
+    target.addEventListener('targetFound', () => { hint.style.opacity = 0; });
+    target.addEventListener('targetLost',  () => { hint.style.opacity = 1; });
+
+    // Диагностика ошибок камеры/AR
+    document.querySelector('a-scene').addEventListener('arError', (e) => {
+      hint.textContent = 'Ошибка AR: ' + (e.detail?.error?.message || 'см. консоль');
+      console.error(e.detail);
+    });
+  </script>
 
 </body>
 </html>
